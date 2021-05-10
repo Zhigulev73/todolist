@@ -1,0 +1,12 @@
+.line{
+    display: flex;
+    justify-content: space-around;
+}
+.submit{
+    width: 150px;
+}
+.listScroll{
+     height: 250px;
+     overflow: auto;
+}
+

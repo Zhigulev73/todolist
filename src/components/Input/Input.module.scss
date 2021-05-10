@@ -1,0 +1,16 @@
+.inputSize {
+  width: 60%;
+}
+
+@media (max-width: 498px) {
+  .inputSize {
+    width: 50%;
+  }
+
+}
+@media (max-width: 390px) {
+  .inputSize {
+    width: 40%;
+  }
+
+}

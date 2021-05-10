@@ -1,0 +1,82 @@
+.task{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.editField{
+    width: 130px;
+}
+.taskProperies{
+    display: flex;
+    align-items: center;
+}
+.taskDate{
+    padding: 9px;
+}
+.submit{
+    height: 25px;
+    width: 40px;
+}
+.taskTitle{
+    display: flex;
+    justify-content: center;
+}
+.taskTitleWithEdit{
+    display: flex;
+    justify-content: center;
+    &:hover{
+        cursor: pointer;
+        text-decoration: underline;
+    }
+}
+.taskEditForm{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 30px;
+    box-sizing: border-box;
+}
+.taskButtons{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 5px;
+}
+@media (max-width: 498px) {
+    .taskDate{
+        padding: 0;
+        font-size: 13px;
+    }
+    .taskTitle{
+        font-size: 13px;
+    }
+    .taskEditForm{
+        width: 80px;
+    }
+    .taskCheckbox{
+        padding: 0;
+        margin-right: 5px;
+        width: 10px;
+    }
+    .editField{
+        width: 60px;
+    }
+}
+@media (max-width: 390px) {
+    .editField{
+        width: 30px;
+    }
+}
+@media (max-width: 320px) {
+    .taskDate{
+        padding: 0;
+        font-size: 10px;
+    }
+    .taskCheckbox{
+        padding: 0;
+        margin-right: 5px;
+        width: 10px;
+    }
+}
+
