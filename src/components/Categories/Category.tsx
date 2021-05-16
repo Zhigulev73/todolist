@@ -1,88 +1,123 @@
-import React, {useState} from "react";
-import {useSelector} from "react-redux";
+import React, {ChangeEvent, useEffect, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 import ClearIcon from "@material-ui/icons/Clear";
 import IconButton from "@material-ui/core/IconButton";
-import {deleteCategory, updateCategoryIcon, updateDefaultCategory} from "../../redux/actions";
-import {BootstrapButton, useStyles} from "./CategoryStyles";
-import {CategoryType} from "../../types/types";
-import {selectDefaultCategoryId} from "../../redux/selectors/selector";
-import ListHook from "../../hooks/ListHook";
+import {
+    actions,
+    deleteCategory,
+    updateCategoryText,
+} from "../../redux/actions";
+import {useStyles} from "./CategoryStyles";
+import {CategoryType, updateCategoryParamsType} from "../../types/types";
+import {
+    getChangedCategoryText,
+    selectDefaultCategoryId
+} from "../../redux/selectors/selector";
 import Button from "@material-ui/core/Button";
 import {Colors, Icons} from "../../api/api";
-import icons from "../../utils/icons";
+import Input from "../Input/Input";
+import {maxLength} from "../../utils/validators/validators";
+import {makeStyles} from "@material-ui/core/styles";
 
 type CategoryPropsType = {
     category: CategoryType;
-    categories: CategoryType[];
+    setEdit: (edit: boolean) => void;
+    setEditCategoryId: (id: number) => void;
+    editCategoryId: number | null;
+    setButton: (button: Colors) => void;
+    setChoosesIcon: (Icon: Icons) => void
 };
 
-const Category: React.FC<CategoryPropsType> = ({category, categories}) => {
-    const [categoryColor, setCategoryColor] = useState<Colors>(category.color);
-    const [categoryIcon, setCategoryIcon] = useState<Icons>(category.icon);
-    const [edit, setEdit] = useState<boolean>(false);
+const Category: React.FC<CategoryPropsType> = ({category, setEdit,
+                                                   setEditCategoryId, editCategoryId,
+                                                   setButton, setChoosesIcon}) => {
+    const {color, id, name, icon, isEdit} = category
+
+    const useStylesSpan = makeStyles({
+        CategoryIcon: {
+            color: color
+        }
+    });
+
+    const iconClasses = useStylesSpan();
     const classes = useStyles();
-    const {
-        dispatch
-    } = ListHook();
+    const dispatch = useDispatch();
     const categoryId = useSelector(selectDefaultCategoryId);
+    const ChangedCategoryText = useSelector(getChangedCategoryText);
 
-    const onUpdateCategoryIcon = (icon: Icons) => {
-        setCategoryIcon(icon);
+    const updateCategoryParams = {
+        name: ChangedCategoryText,
+        id: id,
     };
 
-    const setNewDefaultCategory = () => {
-        dispatch(updateDefaultCategory(category.id));
+    const deleteChoosedCategory = () => {
+        dispatch(deleteCategory(id));
+        setEditCategoryId(id);
     };
 
-    const deleteCategories = () => {
-        dispatch(deleteCategory(category.id));
+    const inputTextChanger = (
+        event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+    ) => {
+        const { value } = event.target;
+        const text = value;
+        dispatch(actions.updateEditCategoryText(text));
+    };
+
+    const EditHandleEnter = (
+        e: React.KeyboardEvent<HTMLDivElement>,
+        updateCategoryParams: updateCategoryParamsType
+    ) => {
+        if (e.key === "Enter") {
+            dispatch(updateCategoryText(updateCategoryParams));
+        }
+    };
+
+    const enterHandler = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        ChangedCategoryText.length > 0
+            ? EditHandleEnter(event, updateCategoryParams) : null;
+    }
+
+    const changeCategoryHandler = () => {
+        dispatch(actions.changeCategoryHandler(id));
     };
 
     return (
         <div className={classes.CategoryPageContainer}>
             <div className={classes.CategoryPageRow}>
                 <div className={classes.CategoryParams}>
-                    {edit
-                        ? (<div>
-                            {icons.map((icon) => (
-                                <Button
-                                    key={icon}
-                                    onClick={() => {
-                                        onUpdateCategoryIcon(icon);
-                                        dispatch(updateCategoryIcon({icon: icon,
-                                            id: category.id}))
-                                        setEdit(false)
-                                    }}
-                                >
-                                    <span className="material-icons">{icon}</span>
-                                </Button>
-                            ))}
-                        </div>)
-                        : <Button
+                    <Button
                             onClick={() => {
                                 setEdit(true)
+                                setEditCategoryId(id)
+                                setButton(color)
+                                setChoosesIcon(icon)
                             }}
                         >
-                        <span className="material-icons" style={{color: categoryColor}}>
-             {categoryIcon}
+                        <span className={`${iconClasses.CategoryIcon} material-icons`}>
+             {icon}
             </span>
-                        </Button>}
-                    <p className={classes.CategoryParamsName}>{category.name}</p>
+                        </Button>
+                    {isEdit
+                        ?
+                        <Input
+                            value={ChangedCategoryText}
+                            onChange={inputTextChanger}
+                            onKeyPress={enterHandler}
+                            error={maxLength(ChangedCategoryText)}
+                            placeholder='edit category'
+                        />
+                        : (<span onClick={changeCategoryHandler} className={classes.categoryTitleWithEdit}>{name}</span>)
+                    }
                 </div>
                 <div>
-                    {categoryId !== category.id
-                        ? (<IconButton aria-label="Delete"
-                                       onClick={deleteCategories}
+                    {categoryId !== id && (<IconButton aria-label="Delete"
+                                       onClick={deleteChoosedCategory}
+                                       disabled={editCategoryId === id}
                         >
                             <ClearIcon color={'secondary'}/>
                         </IconButton>)
-                        : null}
+                        }
                 </div>
-            </div>
-            <div>
-                <BootstrapButton size="small" onClick={setNewDefaultCategory}>
-                    Add Default Category
-                </BootstrapButton>
             </div>
         </div>
     );

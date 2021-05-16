@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {
     actions,
-    addCategory, getCategories, getDefaultCategory
+    addCategory, updateCategory
 } from "../../redux/actions";
 import colors from "../../utils/colors";
 import icons from "../../utils/icons";
@@ -12,25 +12,39 @@ import useStyles from "../../pages/Settings/SettingsStyles";
 import {Colors, Icons} from "../../api/api";
 import Input from "../Input/Input";
 import {maxLength} from "../../utils/validators/validators";
-import ListHook from "../../hooks/ListHook";
-import {CategoryType} from "../../types/types";
+import {Icon} from "../Icon/Icon";
 
+type CategoryCreatorType = {
+    edit: boolean
+    editCategoryId: number | null
+    setEdit: (edit: boolean) => void
+    setEditCategoryId: (id: number | null) => void;
+    setButton: (button: Colors) => void;
+    setChoosesIcon: (Icon: Icons) => void;
+    button: Colors;
+    choosesIcon: Icons;
+}
 
-const CategoryCreator: React.FC = () => {
-    const {
-        dispatch
-    } = ListHook();
+const CategoryCreator: React.FC<CategoryCreatorType> = ({edit, editCategoryId,
+                                                            setEdit, setEditCategoryId,
+                                                            setButton, setChoosesIcon,
+                                                            button, choosesIcon
+                                                        }) => {
+    const dispatch = useDispatch();
 
     const categoriesName = useSelector(getCategoriesName);
     const categories = useSelector(getCategoriesFromState);
 
     const classes = useStyles();
 
-    const [categoryColor, setCategoryColor] = useState<Colors>("black");
-    const [categoryIcon, setCategoryIcon] = useState<Icons>("home");
-    const [button, setButton] = useState<string>("");
-    const [choosesIcon, setChoosesIcon] = useState<string>("");
-    const [exist, setExist] = useState<CategoryType | undefined>(undefined);
+    const [categoryColor, setCategoryColor] = useState<Colors>('black');
+    const [categoryIcon, setCategoryIcon] = useState<Icons>('home');
+    const [existSameCat, setExistSameCat] = useState<boolean>(false);
+
+    useEffect(() => {
+        setCategoryColor(button);
+        setCategoryIcon(choosesIcon);
+    }, [button, choosesIcon]);
 
     const onUpdateCategoryName = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         const text = event.target.value;
@@ -47,37 +61,48 @@ const CategoryCreator: React.FC = () => {
         name: categoriesName,
         color: categoryColor,
         icon: categoryIcon,
+        isEdit: false,
+    };
+    const editCategoryParams = {
+        color: categoryColor,
+        icon: categoryIcon,
+        id: editCategoryId,
     };
 
-    useEffect(() => {
-        dispatch(getCategories());
-        dispatch(getDefaultCategory());
-    }, []);
+
 
     useEffect(() => {
-        setExist(categories.find(category => category.icon == categoryIcon && category.color == categoryColor))
+        setExistSameCat(categories.some(category => category.icon === categoryIcon && category.color === categoryColor))
     }, [categories, categoryIcon, categoryColor]);
 
     const addNewCategory = () => {
         if (categoriesName && categoriesName.length <= 10) {
-            exist === undefined ? dispatch(addCategory(newCategoryParams)) : null
+            dispatch(addCategory(newCategoryParams))
         }
+    };
+    const editCategory = () => {
+            dispatch(updateCategory(editCategoryParams))
+            setEdit(false)
+            setEditCategoryId(null)
     };
 
     const AddHandleEnter = (event: React.KeyboardEvent<HTMLDivElement>) => {
         if (categoriesName && categoriesName.length <= 10 && event.key === "Enter") {
-                exist === undefined ? dispatch(addCategory(newCategoryParams)) : null
+            !existSameCat ? dispatch(addCategory(newCategoryParams)) : null
         }
     };
 
     return (
         <div>
-            <Input
-                value={categoriesName}
-                onChange={onUpdateCategoryName}
-                onKeyPress={AddHandleEnter}
-                error={maxLength(categoriesName)}
-            />
+            {!edit ? (
+                <Input
+                    value={categoriesName}
+                    onChange={onUpdateCategoryName}
+                    onKeyPress={AddHandleEnter}
+                    error={maxLength(categoriesName)}
+                    placeholder='new Category'
+                />
+            ) : null}
             <h3>Color</h3>
             <div className={classes.SettingsCategoryCreator}>
                 {colors.map((color) => (
@@ -103,7 +128,7 @@ const CategoryCreator: React.FC = () => {
                         }}
                         className={choosesIcon === icon ? classes.SettingsColorButtonActive : classes.SettingsColorButton}
                     >
-                        <span className="material-icons">{icon}</span>
+                        <Icon color={button} icon={icon}/>
                     </Button>
                 ))}
             </div>
@@ -112,10 +137,14 @@ const CategoryCreator: React.FC = () => {
                     variant="outlined"
                     size="small"
                     color="primary"
-                    onClick={addNewCategory}
-                    disabled={categoriesName.length > 10 || categories.length >= 9}
+                    onClick={edit ? editCategory : addNewCategory}
+                    disabled={edit ? existSameCat
+                        : existSameCat
+                          ||categoriesName.length > 10
+                          || categories.length >= 9
+                          || categoriesName.length === 0 }
                 >
-                    Create
+                    {edit ? 'Edit' : 'Create'}
                 </Button>
             </div>
         </div>

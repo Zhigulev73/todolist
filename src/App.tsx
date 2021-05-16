@@ -1,10 +1,9 @@
 import React from "react";
 import {
-  BrowserRouter as Router,
-  NavLink,
-  Route,
-  Switch,
-  Redirect,
+    BrowserRouter as Router,
+    NavLink,
+    Route,
+    Switch,
 } from "react-router-dom";
 import classes from "./app.module.scss";
 import routes from "./utils/Router";

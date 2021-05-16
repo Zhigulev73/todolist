@@ -26,4 +26,13 @@ export const useStyles = makeStyles(theme => ({
     width: "15%",
     height: "40px",
   },
+  AppListDateFilter: {
+    width: '350px',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: 'center'
+  },
+  AppText: {
+    marginRight: '10px'
+  },
 }));

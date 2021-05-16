@@ -16,6 +16,7 @@ const theme = createMuiTheme({
 
 export const useStyles = makeStyles({
   CategoryPageContainer: {
+    minHeight: '48px',
     minWidth: '200px',
     display: "flex",
     justifyContent: 'space-between',
@@ -31,19 +32,23 @@ export const useStyles = makeStyles({
     alignItems: 'center',
     width: '300px'
   },
+  CategoryTitle: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  categoryTitleWithEdit: {
+    display: 'flex',
+    justifyContent: 'center',
+    "&:hover": {
+      cursor: 'pointer',
+      textDecoration: 'underline',
+    }
+  },
   CategoryParamsName: {
     marginLeft: '10px'
   },
   CategoryPageRow: {
-    display: 'flex'
+    display: 'flex',
+    alignItems: 'center'
   },
 });
-
-export const BootstrapButton = withStyles({
-  root: {
-    color: "white",
-    "&:hover": {
-      color: "black",
-    },
-  },
-})(Button);

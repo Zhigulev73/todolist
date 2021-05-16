@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import Button from "@material-ui/core/Button";
 import {
     KeyboardDatePicker,
@@ -21,7 +21,6 @@ import {NewTaskParamsType} from "../../types/types";
 import {useStyles} from "./ToDoListsStyles";
 import Input from "../../components/Input/Input";
 import {maxLength} from "../../utils/validators/validators";
-import ListHook from "../../hooks/ListHook";
 import {Select} from "@material-ui/core";
 import MenuItem from "@material-ui/core/MenuItem";
 import {Icon} from "../../components/Icon/Icon";
@@ -34,20 +33,30 @@ const toDoLists: React.FC = () => {
     const categories = useSelector(getCategoriesFromState);
     const [opened, setOpened] = useState<boolean>(false);
     const [category, setCategory] = useState<number | null>(categoryId);
-    const [selectedDate, setSelectedDate] = useState<DateType>(
-        new Date(Date.now())
+    const [taskDate, setTaskDate] = useState(new Date(Date.now()));
+    const [selectedDateFrom, setSelectedDateFrom] = useState<DateType | null>(
+        null
     );
-
-    const {
-        dispatch
-    } = ListHook();
+    const [selectedDateTo, setSelectedDateTo] = useState<DateType | null>(
+        null
+    );
+    const [selectDateFrom, setSelectDateFrom] = useState<DateType | null>(
+        null
+    );
+    const [selectDateTo, setSelectDateTo] = useState<DateType | null>(
+        null
+    );
+    const dispatch = useDispatch();
 
     useEffect(() => {
         setCategory(categoryId);
     }, [categoryId]);
 
-    const handleDateChange = (date: DateType) => {
-        setSelectedDate(date);
+    const handleDateFromChange = (date: DateType | null) => {
+        setSelectedDateFrom(date);
+    };
+    const handleDateToChange = (date: DateType | null) => {
+        setSelectedDateTo(date);
     };
 
     const handleChangeCategory = (event: React.ChangeEvent<{name?: string | undefined, value: unknown}>) => {
@@ -66,7 +75,7 @@ const toDoLists: React.FC = () => {
         isDone: false,
         isEdit: false,
         categoryId: categoryId,
-        date: selectedDate ? selectedDate.toLocaleDateString() : null,
+        date: taskDate.valueOf(),
         isFavorite: false,
     };
 
@@ -87,6 +96,11 @@ const toDoLists: React.FC = () => {
     const classes = useStyles();
 
 
+    const setSelectDate = () => {
+        setSelectDateFrom(selectedDateFrom)
+        setSelectDateTo(selectedDateTo)
+    }
+
     return (
         <div>
             <div className={classes.AppPageMainTitle}>
@@ -99,31 +113,33 @@ const toDoLists: React.FC = () => {
                         onChange={inputTextChanger}
                         onKeyPress={AddHandleEnter}
                         error={maxLength(newTaskText)}
+                        placeholder='new Task'
                     />
-                    <Select
+                    { category !== null ?
+                        <Select
                         onOpen={onOpen}
                         onClose={onClose}
                         onChange={handleChangeCategory}
                         value={category}
-                    >
+                        >
                         {
                             categories.map(({
-                                                    id, color, icon, name
-                                                }) => (
+                                                id, color, icon, name
+                                            }) => (
                                 <MenuItem key={id} value={id}>
                                     <>
-                                        <Icon color={color} icon={icon} />
+                                        <Icon color={color} icon={icon}/>
                                         {opened && name}
                                     </>
                                 </MenuItem>
                             ))
                         }
-                    </Select>
+                        </Select> : null}
                     <Button
                         className={classes.AppButton}
                         variant="outlined"
                         color="primary"
-                        disabled={newTaskText.length > 10}
+                        disabled={newTaskText.length === 0 || newTaskText.length > 10}
                         onClick={() => {
                             newTaskText && newTaskText.length < 10 && dispatch(addTask(NewTaskParams));
                         }}
@@ -131,14 +147,34 @@ const toDoLists: React.FC = () => {
                         ADD
                     </Button>
                 </div>
+                <div>
+                    <h5>Фильтрация по периоду:</h5>
+                    <div className={classes.AppListDateFilter}>
+                        <span className={classes.AppText}>с</span>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
                         variant="inline"
-                        format="yyyy-MM-dd"
+                        format="dd-MM-yyyy"
                         margin="normal"
                         id="date-picker-inline"
-                        value={selectedDate}
-                        onChange={handleDateChange}
+                        value={selectedDateFrom}
+                        onChange={handleDateFromChange}
+                        KeyboardButtonProps={{
+                            "aria-label": "change date",
+                        }}
+                        style={{width: 180, marginBottom: "20px", marginRight: "20px"}}
+                        disableToolbar
+                    />
+                </MuiPickersUtilsProvider>
+                        <span className={classes.AppText}>по</span>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <KeyboardDatePicker
+                        variant="inline"
+                        format="dd-MM-yyyy"
+                        margin="normal"
+                        id="date-picker-inline2"
+                        value={selectedDateTo}
+                        onChange={handleDateToChange}
                         KeyboardButtonProps={{
                             "aria-label": "change date",
                         }}
@@ -146,7 +182,15 @@ const toDoLists: React.FC = () => {
                         disableToolbar
                     />
                 </MuiPickersUtilsProvider>
-                <ListWrapper isListDone={false}/>
+                    </div>
+                    <Button
+                        variant="outlined"
+                        onClick={setSelectDate}
+                    >
+                        Filter
+                    </Button>
+                </div>
+                <ListWrapper isListDone={false} selectedDateFrom={selectDateFrom} selectedDateTo={selectDateTo}/>
             </div>
         </div>
     );

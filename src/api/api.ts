@@ -1,14 +1,14 @@
 import axios from "axios";
 import { TaskType } from "../components/Task/task";
 import {
-  CategoryDataType,
-  CategoryType,
-  NewCategoryParamsType,
-  NewTaskParamsType,
-  ParamsType, UpdateCategoryParamsType,
-  UpdateDoneType,
-  UpdateFavoriteParamsType,
-  UpdateTaskParamsType,
+    CategoryDataType,
+    CategoryType,
+    NewCategoryParamsType,
+    NewTaskParamsType,
+    ParamsType, updateCategoryParamsType, UpdateCategoryParamsType,
+    UpdateDoneType,
+    UpdateFavoriteParamsType,
+    UpdateTaskParamsType, UpdateTaskType,
 } from "../types/types";
 
 const instance = axios.create({
@@ -25,7 +25,7 @@ export const API = {
   getTasks: (Params: ParamsType) =>
     instance
       .get<Array<TaskType>>(
-        `tasks?${Params.searchString}&isDone=${Params.isListDone}&_start=0&_end=${Params.end}&_limit=${limit}`
+        `tasks?date_gte=${Params.dateFrom}&date_lte=${Params.dateTo}&${Params.searchString}&isDone=${Params.isListDone}&_start=0&_end=${Params.end}&_limit=${limit}`
       )
       .then((response) => response.data),
 
@@ -36,19 +36,16 @@ export const API = {
   addTask: (NewTaskParams: NewTaskParamsType) =>
     instance.post<TaskType>(`/tasks/`, NewTaskParams),
 
-  updateTaskText: (updateTaskParams: UpdateTaskParamsType) =>
-    instance.patch<CategoryType>(`/tasks/${updateTaskParams.id}`, {
-      title: updateTaskParams.title,
+  updateTask: (UpdateTaskNewParams: UpdateTaskType) =>
+    instance.patch<CategoryType>(`/tasks/${UpdateTaskNewParams.id}`, {
+      isFavorite: UpdateTaskNewParams.isFavorite,
+      title: UpdateTaskNewParams.title,
+      isDone: UpdateTaskNewParams.isDone,
     }),
 
-  updateDoneHandler: (updateDone: UpdateDoneType) =>
-    instance.patch<CategoryType>(`/tasks/${updateDone.id}`, {
-      isDone: updateDone.isDone,
-    }),
-
-  updateFavoriteHandler: (updateFavoriteParams: UpdateFavoriteParamsType) =>
-    instance.patch<CategoryType>(`/tasks/${updateFavoriteParams.id}`, {
-      isFavorite: updateFavoriteParams.isFavorite,
+  updateCategoryText: (updateCategoryParams: updateCategoryParamsType) =>
+    instance.patch<CategoryType>(`/categories/${updateCategoryParams.id}`, {
+        name: updateCategoryParams.name,
     }),
 
   getCategories: () =>
@@ -67,9 +64,10 @@ export const API = {
     instance.put<CategoryType>(`/defaultCategory`, {
       id,
     }),
-  updateCategoryIcon: (UpdateCategoryParams: UpdateCategoryParamsType) =>
-      instance.patch<CategoryType>(`/categories/${UpdateCategoryParams.id}`, {
-        icon: UpdateCategoryParams.icon,
+    updateCategory: ({id, icon, color}: UpdateCategoryParamsType) =>
+      instance.patch<CategoryType>(`/categories/${id}`, {
+        icon: icon,
+        color: color
       }),
 
   addCategory: (newCategoryParams: NewCategoryParamsType) =>

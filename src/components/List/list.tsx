@@ -3,12 +3,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Task, {TaskType} from "../Task/task";
 import Preloader from "../Preloader/Preloader";
 import {CategoryType} from "../../types/types";
-import classes from "./list.module.css";
-import fadeTransition from "./fade.module.css";
-import {
-    CSSTransition,
-    TransitionGroup,
-} from 'react-transition-group';
+import classes from "./list.module.scss";
+import FlipMove from 'react-flip-move';
 
 type PropsType = {
     tasks: Array<TaskType>;
@@ -26,18 +22,26 @@ const List: React.FC<PropsType> = ({
                                        isListDone,
                                    }) => {
     const [hasMore, setHasMore] = useState<boolean>(true);
+    const [tasksLength, setTasksLength] = useState<number>(0);
+    const [sortTasks, setSortTasks] = useState<TaskType[]>(tasks);
 
+    useEffect(() => {
+        setSortTasks(tasks
+            .filter(task => task.isDone === isListDone)
+            .sort((a) => a.isFavorite ? -1 : 1))
+    }, [tasks]);
 
     useEffect(() => {
         end <= tasks.length ? setHasMore(true) : setHasMore(false);
+        setTasksLength(tasks.length)
     }, [tasks.length, end]);
 
     return (
         <>
-            <div className={classes.listScroll} id="scrollableDiv">
+            <div className={classes.listScroll}>
                 <InfiniteScroll
-                    dataLength={tasks.length}
-                    next={() => setEnd(end + 8)}
+                    dataLength={tasksLength}
+                    next={() => setEnd(end + 4)}
                     hasMore={hasMore}
                     loader={<Preloader/>}
                     endMessage={
@@ -45,24 +49,29 @@ const List: React.FC<PropsType> = ({
                             <b>Yay! You have seen it all</b>
                         </p>
                     }
-                    scrollableTarget="scrollableDiv"
                 >
-                    <TransitionGroup>
-                        {tasks.map((task) => (
-                            <CSSTransition
-                                key={task.id}
-                                timeout={400}
-                                classNames={fadeTransition}
-                            >
+                        <FlipMove>
+                        {/*{tasks.map((task) => (*/}
+                        {/*        <Task*/}
+                        {/*            categories={categories}*/}
+                        {/*            task={task}*/}
+                        {/*            key={task.id}*/}
+                        {/*            isListDone={isListDone}*/}
+                        {/*            setEnd={setEnd}*/}
+                        {/*            end={end}*/}
+                        {/*        />*/}
+                        {/*))}*/}
+                            {sortTasks.map((task) => (
                                 <Task
                                     categories={categories}
                                     task={task}
                                     key={task.id}
                                     isListDone={isListDone}
+                                    setEnd={setEnd}
+                                    end={end}
                                 />
-                            </CSSTransition>
-                        ))}
-                    </TransitionGroup>
+                            ))}
+                        </FlipMove>
                 </InfiniteScroll>
             </div>
         </>

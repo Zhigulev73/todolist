@@ -7,12 +7,15 @@ export type CategoryType = {
   name: string;
   color: Colors;
   id: number;
+  isEdit: boolean;
 };
 
 export type ParamsType = {
   isListDone?: boolean;
   end?: number;
   searchString: string;
+  dateFrom: number | null;
+  dateTo: number | null;
 };
 export type UpdateDoneType = {
   isDone: boolean;
@@ -23,9 +26,21 @@ export type UpdateTaskParamsType = {
   title: string;
   id: number;
 };
+export type UpdateTaskType = {
+  title: string;
+  id: number;
+  isDone: boolean;
+  isFavorite: boolean;
+  isListDone: boolean;
+};
+export type updateCategoryParamsType = {
+  name: string,
+  id: number,
+};
 export type UpdateCategoryParamsType = {
   icon: Icons;
-  id: number;
+  color: Colors;
+  id: number | null;
 };
 export type UpdateFavoriteParamsType = {
   isFavorite: boolean;
@@ -36,7 +51,7 @@ export type NewTaskParamsType = {
   isDone: boolean;
   isEdit: boolean;
   categoryId: number | null;
-  date: string | null;
+  date: number;
   isFavorite: boolean;
 };
 export type NewCategoryParamsType = {

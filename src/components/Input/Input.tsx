@@ -7,15 +7,17 @@ export type InputPropsType = {
     value: string
     error: string | undefined
     onChange: (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => void
+    placeholder: string
 }
 
-const Input: React.FC<InputPropsType> = ({ onKeyPress, value, error=undefined , onChange }) => {
+const Input: React.FC<InputPropsType> = ({ onKeyPress, value, error=undefined , onChange, placeholder }) => {
 
     return ( <TextField
                 onKeyPress={onKeyPress}
                 value={value}
                 onChange={onChange}
                 className={classes.inputSize}
+                placeholder={placeholder}
                 {...(error && {error:true, helperText:error})}
                 />
     )

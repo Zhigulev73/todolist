@@ -1,15 +1,11 @@
 import Switch from "@material-ui/core/Switch";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useStyles} from "../ListWrapper/ListWrapperStyles";
-import ListHook from "../../hooks/ListHook";
-import queryString from "query-string";
-import QueryParams from "../../utils/QueryParams";
-import {useDispatch} from "react-redux";
-import {actions, getNewTasks, getTasks} from "../../redux/actions";
-import { useLocation } from "react-router-dom";
 import MenuItem from "@material-ui/core/MenuItem";
 import {Icon} from "../Icon/Icon";
 import {Select} from "@material-ui/core";
+import {useSelector} from "react-redux";
+import {getCategoriesFromState} from "../../redux/selectors/selector";
 
 type SwitchesType = {
     title: string;
@@ -18,29 +14,19 @@ type SwitchesType = {
 };
 
 type FilterType = {
-    isListDone: boolean;
-    end: number;
-};
+    onNameSortChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    onDateSortChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    nameSort: boolean
+    dateSort: boolean
+    categoryId: string | string[] | null
+    setCategoryId: (categoryId: string | string[] | null) => void
+}
 
-const Filter: React.FC<FilterType> = ({end, isListDone }) => {
-
+const Filter: React.FC<FilterType> = ({onNameSortChange, onDateSortChange, nameSort,
+                                          dateSort, categoryId, setCategoryId}) => {
     const classes = useStyles();
-    const parsed = queryString.parse(location.search);
-    const dispatch = useDispatch();
     const [opened, setOpened] = useState<boolean>(false);
-    const locationPath = useLocation();
-    const {
-        categories,
-        history,
-        dateSort,
-        nameSort,
-        onNameSortChange,
-        onDateSortChange,
-        categoryId,
-        setCategoryId,
-        setNameSort,
-        setDateSort,
-    } = ListHook();
+    const categories = useSelector(getCategoriesFromState);
 
     const onOpen = () => {
         setOpened(true);
@@ -52,65 +38,6 @@ const Filter: React.FC<FilterType> = ({end, isListDone }) => {
     const handleChangeCategory = (event: React.ChangeEvent<{name?: string | undefined, value: unknown}>) => {
         event.target.value !== 51 ? setCategoryId(`${event.target.value}`) : setCategoryId(null)
     };
-
-    useEffect(() => {
-        parsed.categoryId
-            ? setCategoryId(parsed.categoryId)
-            : null;
-        switch (parsed._sort) {
-            case "isFavorite,date": {
-                setDateSort(true);
-                QueryParams._sort[1] = "date";
-                QueryParams._order[1] = "asc";
-                break;
-            }
-            case "isFavorite,title": {
-                setNameSort(true);
-                QueryParams._sort[2] = "title";
-                QueryParams._order[2] = "asc";
-                break;
-            }
-            case "isFavorite,date,title": {
-                setDateSort(true);
-                QueryParams._sort[1] = "date";
-                QueryParams._order[1] = "asc";
-                setNameSort(true);
-                QueryParams._sort[2] = "title";
-                QueryParams._order[2] = "asc";
-                break;
-            }
-            default:
-                break;
-        }
-
-        const searchString = queryString.stringify(QueryParams, {
-            skipNull: true,
-            arrayFormat: "comma",
-        });
-
-        dispatch(getTasks({isListDone, end, searchString}));
-    }, []);
-
-    useEffect(() => {
-        QueryParams._sort[1] = dateSort ? "date" : null;
-        QueryParams._sort[2] = nameSort ? "title" : null;
-        QueryParams._order[1] = dateSort ? "asc" : null;
-        QueryParams._order[2] = nameSort ? "asc" : null;
-        QueryParams.categoryId = categoryId;
-
-        const searchString = queryString.stringify(QueryParams, {
-            skipNull: true,
-            arrayFormat: "comma",
-        });
-
-        history.push({
-            pathname: locationPath.pathname,
-            search: searchString,
-        });
-
-        dispatch(getNewTasks({isListDone, end, searchString}))
-
-    }, [dateSort, nameSort, categoryId, end]);
 
     const completedTasksSwitches: SwitchesType[] = [
         {
@@ -132,7 +59,7 @@ const Filter: React.FC<FilterType> = ({end, isListDone }) => {
                     onOpen={onOpen}
                     onClose={onClose}
                     onChange={handleChangeCategory}
-                    value={categoryId}
+                    value={categoryId || 51}
                     style={{ width: 130 }}
                 >
                     {

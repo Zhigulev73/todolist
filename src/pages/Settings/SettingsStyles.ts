@@ -34,6 +34,13 @@ const useStyles = makeStyles( {
     SettingsMainTitle: {
         textAlign: "center",
     },
+    CategoryParams: {
+        display: "flex",
+        alignItems: 'center',
+    },
+    DefaultCategoryIcon: {
+        marginRight: '15px'
+    },
     SettingsColorButton: {
         margin: "5px",
         height: 40,
@@ -48,7 +55,7 @@ const useStyles = makeStyles( {
         margin: "5px",
         height: 40,
         width: 100,
-        outline: '1px solid red',
+        boxShadow: '0 0 10px rgba(255,0,0,0.7)'
     },
     SettingsIconButtonActive: {
         margin: "5px",

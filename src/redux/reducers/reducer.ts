@@ -3,29 +3,31 @@ import { ActionsType } from "../actions";
 import { CategoryType } from "../../types/types";
 
 interface InitialStateType {
-  tasks: Array<TaskType>;
+  doneTasks: Array<TaskType>;
+  unDoneTasks: Array<TaskType>;
   newTaskText: string;
   ChangedTaskText: string;
+  ChangedCategoryText: string;
   editItem: boolean;
   isFetching: boolean;
   categories: Array<CategoryType>;
   categoryId: number | null
   categoriesName: string;
   endNumber: number;
-  isEditStatus: boolean;
 }
 
 const initialState: InitialStateType = {
-  tasks: [],
+  doneTasks: [],
+  unDoneTasks: [],
   newTaskText: "",
   ChangedTaskText: "",
+  ChangedCategoryText: "",
   editItem: false,
   isFetching: false,
   categories: [],
   categoryId: null,
   categoriesName: "",
   endNumber: 8,
-  isEditStatus: false,
 };
 
 const reducer = (
@@ -39,16 +41,16 @@ const reducer = (
         newTaskText: action.text,
       };
     }
-    case "UPDATE_IS_EDIT": {
-      return {
-        ...state,
-        isEditStatus: !state.isEditStatus,
-      };
-    }
     case "UPDATE_EDIT_TASK_TEXT": {
       return {
         ...state,
         ChangedTaskText: action.text,
+      };
+    }
+    case "UPDATE_EDIT_CATEGORY_TEXT": {
+      return {
+        ...state,
+        ChangedCategoryText: action.text,
       };
     }
     case "UPDATE_CATEGORY_TEXT": {
@@ -60,7 +62,7 @@ const reducer = (
     case "ADD_NEW_TASK": {
       return {
         ...state,
-        tasks: [...state.tasks, action.task],
+        unDoneTasks: [...state.unDoneTasks, action.task],
         newTaskText: "",
       };
     }
@@ -74,7 +76,8 @@ const reducer = (
     case "DELETE_TASK": {
       return {
         ...state,
-        tasks: [...state.tasks.filter((task) => task.id !== action.id)],
+        doneTasks: [...state.doneTasks.filter((task) => task.id !== action.id)],
+        unDoneTasks: [...state.unDoneTasks.filter((task) => task.id !== action.id)],
       };
     }
     case "DELETE_CATEGORY": {
@@ -88,7 +91,13 @@ const reducer = (
     case "SET_TASKS": {
       return {
         ...state,
-        tasks: action.tasks,
+        doneTasks: action.tasks,
+      };
+    }
+    case "SET_DONE_TASKS": {
+      return {
+        ...state,
+        unDoneTasks: action.tasks,
       };
     }
     case "SET_UNIC_CATEGORIES": {
@@ -104,27 +113,47 @@ const reducer = (
       };
     }
     case "CHANGE_TASK_STATUS": {
-      return {
+      return action.isListDone ? {
         ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.id ? { ...task, isDone: !task.isDone } : task
-        ).filter(task => task.isDone === action.isListDone),
-      };
+        doneTasks: state.doneTasks.map((task) =>
+            task.id === action.id ? { ...task, isDone: !task.isDone } : task
+        ),
+      } : {
+        ...state,
+        unDoneTasks: state.unDoneTasks.map((task) =>
+            task.id === action.id ? { ...task, isDone: !task.isDone } : task
+        ),
+      }
     }
     case "CHANGE_FAVORITE_STATUS": {
       return {
         ...state,
-        tasks: state.tasks.map((task) =>
+        doneTasks: state.doneTasks.map((task) =>
           task.id === action.id
             ? { ...task, isFavorite: !task.isFavorite }
             : task
-        ).sort((a) => a.isFavorite ? -1 : 1),
+        ),
+        unDoneTasks: state.unDoneTasks.map((task) =>
+          task.id === action.id
+            ? { ...task, isFavorite: !task.isFavorite }
+            : task
+        ),
+      };
+    }
+    case "EDIT_CATEGORY_ICON": {
+      return {
+        ...state,
+        categories: state.categories.map((category) =>
+          category.id === action.UpdateCategoryParams.id
+            ? { ...category, icon: action.UpdateCategoryParams.icon, color: action.UpdateCategoryParams.color }
+            : category
+        ),
       };
     }
     case "EDIT_TASK_TEXT": {
       return {
         ...state,
-        tasks: state.tasks.map((task) =>
+        unDoneTasks: state.unDoneTasks.map((task) =>
           task.id === action.updateTaskParams.id
             ? {
                 ...task,
@@ -135,15 +164,40 @@ const reducer = (
         ),
       };
     }
+    case "EDIT_CATEGORY_TEXT": {
+      return {
+        ...state,
+        categories: state.categories.map((category) =>
+          category.id === action.updateCategoryParams.id
+            ? {
+                ...category,
+                name: action.updateCategoryParams.name,
+                isEdit: !category.isEdit,
+              }
+            : category
+        ),
+      };
+    }
     case "CHANGE_HANDLER": {
       return {
         ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.id ? { ...task, isEdit: !task.isEdit } : task
+        unDoneTasks: state.unDoneTasks.map((task) =>
+          task.id === action.id ? { ...task, isEdit: !task.isEdit } : { ...task, isEdit: false }
         ),
         // @ts-ignore
-        ChangedTaskText: state.tasks.find((task) => task.id === action.id)
+        ChangedTaskText: state.unDoneTasks.find((task) => task.id === action.id)
           .title,
+      };
+    }
+    case "CHANGE_CATEGORY_HANDLER": {
+      return {
+        ...state,
+        categories: state.categories.map((category) =>
+            category.id === action.id ? { ...category, isEdit: !category.isEdit } : { ...category, isEdit: false }
+        ),
+        // @ts-ignore
+        ChangedCategoryText: state.categories.find((categories) => categories.id === action.id)
+          .name,
       };
     }
     case "TOGGLE_IS_FETCHING": {

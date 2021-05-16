@@ -14,7 +14,8 @@ export const StyledIconButton = withStyles({
   root: {
     padding: '0',
     minWidth: '5px',
-    marginLeft: '10px'
+    marginLeft: '10px',
+    color: 'yellow',
     },
   },
 )(IconButton);

@@ -4,10 +4,12 @@ import withSuspense from "../hoc/withSuspense";
 const ToDoLists = React.lazy(() => import("../pages/ToDoLists/ToDoLists"));
 const CompletedTasks = React.lazy(() => import("../pages/CompletedTasks/CompletedTasks"));
 const Settings = React.lazy(() => import("../pages/Settings/Settings"));
+const ErrorPage = React.lazy(() => import("../pages/404/ErrorPage"));
 
 const SuspendedToDoLists = withSuspense(ToDoLists);
 const SuspendedCompletedTasks = withSuspense(CompletedTasks);
 const SuspendedSettings = withSuspense(Settings);
+const SuspendedError = withSuspense(ErrorPage);
 
 export type ComponentsType = {
   path: string;
@@ -30,6 +32,10 @@ const Routes: ComponentsType[] = [
   {
     path: "/",
     Component: SuspendedToDoLists,
+  },
+  {
+    path: "*",
+    Component: SuspendedError,
   },
 ];
 
